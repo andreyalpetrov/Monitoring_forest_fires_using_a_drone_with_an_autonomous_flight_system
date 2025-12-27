@@ -22,28 +22,45 @@ def wait_arrival(tolerance=0.2):
             break
         rospy.sleep(0.2)
 
-start = get_telemetry()
+start = get_telemetry(frame_id='map')
 
 print('Start point global position: lat={}, lon={}'.format(start.lat, start.lon))
 
-print('Take off 2 meters')
-navigate(x=0, y=0, z=2, frame_id='body', auto_arm=True)
+print('Take off 15 meters')
+
+navigate(x=0, y=0, z=1, frame_id='body', auto_arm=True)
 wait_arrival()
+print('BASIC take off is done')
+rospy.sleep(4)
+navigate(frame_id='aruco_55', x=0, y=0, z=5)
+wait_arrival()
+print('ARUCO aruco_55 is done')
+rospy.sleep(4)
+
+
+telem = get_telemetry(frame_id='map')
+# Летим в (lat, lon) на текущей высоте (z=telem.z)
+print('telem.z = ', telem.z)
+navigate_global(lat=start.lat, lon=start.lon, z=telem.z, speed=5, frame_id='map')
+wait_arrival()
+rospy.sleep(4)
+print('GPS take off is done')
+
 
 print('flying to the upper left side of the square')
-navigate_global(lat=start.lat+0.000045, lon=start.lon, yaw=math.inf, z=start.z+2, speed=5)
+navigate_global(lat=start.lat+0.000045, lon=start.lon, z=telem.z, speed=5, frame_id='map')
 wait_arrival()
 
 print('flying to the upper right side of the square')
-navigate_global(lat=start.lat+0.000045, lon=start.lon + 0.000045, yaw=math.inf, z=start.z+2, speed=5)
+navigate_global(lat=start.lat+0.000045, lon=start.lon + 0.000045, z=telem.z, speed=5, frame_id='map')
 wait_arrival()
 
 print('flying to the lower right side of the square')
-navigate_global(lat=start.lat, lon=start.lon + 0.000045, z=start.z+2, yaw=math.inf, speed=5)
+navigate_global(lat=start.lat, lon=start.lon + 0.000045, z=telem.z,  speed=5, frame_id='map')
 wait_arrival()
 
 print('flying to the starting position')
-navigate_global(lat=start.lat, lon=start.lon, z=start.z+2, yaw=math.inf, speed=5)
+navigate_global(lat=start.lat, lon=start.lon, z=telem.z, speed=5, frame_id='map')
 wait_arrival()
 
 print('Land')
